@@ -1,0 +1,22 @@
+import React, { Component } from 'react';
+import MyRoutes from './MyRoutes';
+
+class App extends Component {
+  state = {
+    contacts: []
+  };
+
+  async componentDidMount() {
+    const response = await fetch('/contacts/retrieve');
+    const body = await response.json();
+    this.setState({contacts: body});
+  }
+
+  render() {
+    const {contacts} = this.state;
+    return ( <MyRoutes /> );
+  }
+}
+
+export default App;
+

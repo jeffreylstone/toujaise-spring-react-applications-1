@@ -1,0 +1,19 @@
+    
+<!--    
+        <Router>
+          <Routes>
+            <Route path='/' exact={true} component={Home}/>
+          </Routes>
+        </Router>
+-->
+
+import logo from './logo.svg';
+import Home from './Home';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+<Link to="/contacts">Contacts</Link>
+import './App.css';
+
+
+                <AppNavbar/>
+import AppNavbar from './AppNavbar';
+                

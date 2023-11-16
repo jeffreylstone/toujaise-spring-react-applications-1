@@ -1,0 +1,31 @@
+import { useEffect, useRef } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { disableBodyScroll, enableBodyScroll } from 'body-scroll-lock';
+
+export default function Modal() {
+  const modalRef = useRef();
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const observerRefValue = modalRef.current;
+    disableBodyScroll(observerRefValue);
+    return () => {
+      if (observerRefValue) {
+        enableBodyScroll(observerRefValue);
+      }
+    };
+  }, []);
+
+  return (
+    <div
+      ref={modalRef}
+      className="modal-wrapper"
+      onClick={() => navigate('/')}
+    >
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        CONTENT
+      </div>
+    </div>
+  )
+}

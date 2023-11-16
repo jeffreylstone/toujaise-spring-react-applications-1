@@ -1,0 +1,53 @@
+const EditContact = () => {
+  return (
+  <div class="modal" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="false">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Create New Contact</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="firstName" class="form-label">First Name*</label>
+          <input type="text" id="firstName" class="form-control" placeholder="First Name"></input>	
+        </div>
+        <div class="mb-3">
+          <label for="preferredName" class="form-label">Preferred Name</label>
+          <input type="text" id="preferredName" class="form-control" placeholder="Preferred Name" aria-describedby="preferredNameHelpBlock"></input>
+          <div id="preferredNameHelpBlock" class="form-text">
+            Preferred version of first name or nickname
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="middleName" class="form-label">Middle Name or Initial</label>
+        <input type="text" id="middleName" class="form-control" placeholder="Middle Name or Initial"></input>
+        </div>
+        <div class="mb-3">
+          <label for="lastName" class="form-label">Last Name*</label>
+          <input type="text" id="lastName" class="form-control" placeholder="Last Name"></input>
+        </div>
+        <div class="mb-3">
+          <label for="suffix" class="form-label">Suffix</label>
+          <input type="text" id="suffix" class="form-control" placeholder="Suffix" aria-describedby="suffixHelpBlock"></input>
+          <div id="suffixHelpBlock" class="form-text">
+            (e.g., Sr, Jr, III, etc)
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="identifier" class="form-label">Identifier</label>
+          <input type="text" id="identifier" class="form-control" placeholder="Identifier"></input>
+        </div>
+        <p class="font-italic">*Required</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Create</button>
+      </div>
+    </div>
+  </div>
+</div>
+  );
+};
+
+export default EditContact;

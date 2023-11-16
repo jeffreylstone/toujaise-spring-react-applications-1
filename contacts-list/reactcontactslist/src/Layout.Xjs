@@ -1,0 +1,41 @@
+import { Outlet, Link } from "react-router-dom";
+
+const Layout = () => {
+  return (
+<>
+<nav>
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane" type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true"><Link to="/">Home</Link></button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="contacts-tab" data-bs-toggle="tab" data-bs-target="#contacts-tab-pane" type="button" role="tab" aria-controls="contacts-tab-pane" aria-selected="false"><Link to="/list">Contacts</Link></button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="name-tab" data-bs-toggle="tab" data-bs-target="#name-tab-pane" type="button" role="tab" aria-controls="name-tab-pane" aria-selected="false"><Link to="/name">Name</Link></button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="address-tab" data-bs-toggle="tab" data-bs-target="#address-tab-pane" type="button" role="tab" aria-controls="address-tab-pane" aria-selected="false"><Link to="/address">Address</Link></button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="phone-tab" data-bs-toggle="tab" data-bs-target="#phone-tab-pane" type="button" role="tab" aria-controls="phone-tab-pane" aria-selected="false"><Link to="/phone">Phone</Link></button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="email-tab" data-bs-toggle="tab" data-bs-target="#email-tab-pane" type="button" role="tab" aria-controls="email-tab-pane" aria-selected="false"><Link to="/email">Email</Link></button>
+  </li>
+</ul>
+</nav>
+<div class="tab-content" id="myTabContent">
+  <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab" tabindex="0">Find | Create</div>
+  <div class="tab-pane fade" id="contacts-tab-pane" role="tabpanel" aria-labelledby="contacts-tab" tabindex="0">List Contacts (maybe additional tabs for A-Z)</div>
+  <div class="tab-pane fade" id="name-tab-pane" role="tabpanel" aria-labelledby="name-tab" tabindex="0">Name</div>
+  <div class="tab-pane fade" id="address-tab-pane" role="tabpanel" aria-labelledby="address-tab" tabindex="0">Address (List) with add/remove, select primary</div>
+  <div class="tab-pane fade" id="phone-tab-pane" role="tabpanel" aria-labelledby="phone-tab" tabindex="0">Phone Number (List) with add/remove, select primary</div>
+  <div class="tab-pane fade" id="email-tab-pane" role="tabpanel" aria-labelledby="email-tab" tabindex="0">Email Address (List) with add/remove, select primary</div>
+</div>
+      <Outlet />
+</>
+  )
+};
+
+export default Layout;

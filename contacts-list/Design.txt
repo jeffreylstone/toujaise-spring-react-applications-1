@@ -1,0 +1,155 @@
+create table public.attribute_usage_code
+(attr_usage_cd smallint auto_increment,
+description varchar(63),
+primary key (attr_usage_cd));
+
+insert into public.attribute_usage_code (description) values ('Home');
+insert into public.attribute_usage_code (description) values ('Work');
+insert into public.attribute_usage_code (description) values ('Personal');
+insert into public.attribute_usage_code (description) values ('Business');
+insert into public.attribute_usage_code (description) values ('Residence');
+insert into public.attribute_usage_code (description) values ('Vacation');
+insert into public.attribute_usage_code (description) values (-1, '(Nothing Selected)');
+
+create table public.phone_type_code
+(phone_type_cd smallint auto_increment,
+description varchar(63),
+primary key (phone_type_cd));
+
+insert into public.phone_type_code (description) values ('Mobile/Wireless/Cellular');
+insert into public.phone_type_code (description) values ('Fixed/Land Line');
+insert into public.phone_type_code (description) values ('Satellite');
+insert into public.phone_type_code (description) values ('Internet/VOIP');
+insert into public.phone_type_code (description) values (-1, '(Nothing Selected)');
+
+CREATE TABLE public.contact (
+  id uuid NOT NULL,
+  last_name varchar(63) NOT NULL,
+  first_name varchar(63) NOT NULL,
+  middle_name_initial varchar(63) NOT NULL DEFAULT '',
+  suffix varchar(31) NOT NULL DEFAULT '',
+  identifier varchar(127) NOT NULL,
+  preferred_first_name varchar(63) NOT NULL DEFAULT '',
+  PRIMARY KEY (id)
+);
+
+insert into public.contact (id, last_name, first_name, middle_name_initial, suffix, identifier, preferred_first_name) values (UUID(), 'Bloom',  'John', '', '', '1', '');
+insert into public.contact (id, last_name, first_name, middle_name_initial, suffix, identifier, preferred_first_name) values (UUID(), 'Stone', 'Brenda', 'L.', '', '1', '');	
+insert into public.contact (id, last_name, first_name, middle_name_initial, suffix, identifier, preferred_first_name) values (UUID(), 'Stone', 'Debora', 'A.', '', '1', 'Debbie');
+insert into public.contact (id, last_name, first_name, middle_name_initial, suffix, identifier, preferred_first_name) values (UUID(), 'Stone', 'Jeffrey', 'L.', '', '1', 'Jeff');
+insert into public.contact (id, last_name, first_name, middle_name_initial, suffix, identifier, preferred_first_name) values (UUID(), 'Stone', 'Jeffrey', 'L.', '', '2', 'Jeff');
+
+
+-------------------
+
+create table public.email
+(id uuid,
+email_addr varchar(320), -- That limit is a maximum of 64 characters (octets) in the "local part" (before the "@") and a maximum of 255 characters (octets) in the domain part (after the "@") for a total length of 320 characters.
+email_usage_cd smallint, -- (home, work, etc) FK to attr_usage_cd in attribute_usage_code
+primary key (email_addr),
+foreign key fk (email_usage_cd) references public.attribute_usage_code (attr_usage_cd)
+);
+
+insert into public.email (id, email_addr, email_usage_cd) values(uuid(), 'jeffrey.l.stone@gmail.com', 3);
+insert into public.email (id, email_addr, email_usage_cd) values(uuid(), 'rock002755901@yahoo.com', 3);
+insert into public.email (id, email_addr, email_usage_cd) values(uuid(), 'littlerock6011@yahoo.com', 3);
+
+CREATE TABLE public.country_code (
+  country_cd3 varchar(3) NOT NULL,
+  country_cd2 varchar(2) DEFAULT NULL,
+  description varchar(127) DEFAULT NULL,
+  std_desc varchar(127) DEFAULT NULL,
+  iso_ctry_nbr varchar(3) DEFAULT NULL,
+  top_lvl_domain varchar(3) DEFAULT NULL,
+  fips varchar(3) DEFAULT NULL,
+  geo_name_id int(11) DEFAULT NULL,
+  e164 varchar(3) DEFAULT NULL,
+  phone_country_cd varchar(8) DEFAULT NULL,
+  continent varchar(127) DEFAULT NULL,
+  capital varchar(127) DEFAULT NULL,
+  capital_tz varchar(31) DEFAULT NULL,
+  currency varchar(31) DEFAULT NULL,
+  PRIMARY KEY (country_cd3)
+) 
+
+create table public.phone_number
+(id uuid,
+phone_country_cd varchar(8), -- 1-3 digits (allows for embedded - AS IN 1-268, 44-1481)
+phone_nbr varchar(18), -- 14 digits max (allowing also for (), ,- AS IN (479) 899-1759)
+phone_nbr_ext varchar(21), -- 15 digits max (allowing also for prefix x, X, or Ext. )
+phone_type_cd smallint, -- (wireless, landline, satellite, internet, etc) FK to phone_type_cd in phone_type_code 
+phone_usage_cd smallint, -- (home, work, etc) FK to attr_usage_cd in attribute_usage_code
+primary key (id) -- enfoce uniqueness of (phone_country_cd, phone_nbr, phone_nbr_ext);
+
+alter table public.phone_number add foreign key fk2 (phone_type_cd) references public.phone_type_code (phone_type_cd);
+alter table public.phone_number add foreign key fk3 (phone_usage_cd) references public.attribute_usage_code (attr_usage_cd);
+
+create table public.state_province_code
+(code varchar(10),
+alpha_2 varchar(2) not null,
+state_prov_cd varchar(7) not null,
+name varchar(63) not null,
+parent varchar(63) default null,
+type varchar(63) not null,
+primary key (code));
+
+
+create table public.country_codes
+(alpha_2 varchar(2) not null,
+alpha_3 varchar(3),
+flag varchar(2) default null,
+name varchar(63) not null,
+iso_numeric varchar(3) not null,
+official_name varchar(63) default null,
+common_name varchar(63) default null,
+primary key(alpha_3));
+
+-------------------
+
+table phone_link
+id uuid
+contact_id uuid -- FK to id in contact
+phone_id uuid -- FK to id in phone_number
+is_primary boolean
+primary key (id)
+
+
+table email_link
+id uuid
+contact_id uuid -- FK to id in contacts
+email_id uuid -- FK to id in email
+is_primary boolean
+primary key (id)
+
+
+table address_link
+id uuid
+contact_id uuid -- FK to id in contacts
+address_id uuid -- FK to id in address
+is_primary boolean
+primary key (id)
+
+
+create table public.address
+(id uuid
+street_address_1
+street_address_2
+city
+state_prov_cd -- fk (with country_cd3) to state_prov_cd in state_province_code
+country_cd3 -- fk (with state_prov_cd) to country_cd3 in state_province_code
+postal_cd
+address_usage_cd -- (home, work, etc) -- FK to attr_usage_cd in attribute_usage_code
+primary key (id) -- enforce uniqueness of (country_cd3, state_province_cd, postal_cd, city, street_address_1, street_address_2),
+
+
+
+
+
+
+
+
+
+
+
+
+
