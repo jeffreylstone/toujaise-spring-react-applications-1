@@ -1,6 +1,5 @@
 import React from 'react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
@@ -10,17 +9,39 @@ const FindContact = (props) => {
 	
   	const [show, setShow] = useState(false);
 
-  	const navigate = useNavigate();
+	const [data, setData] = useState({});
+
+    const updateData = (e) => {
+        setData({
+            ...data,
+            [e.target.name]: e.target.value
+        });
+    };
+
+    const submit = (e) => {
+        e.preventDefault();
+        console.log(data);
+        setShow(false);
+        if (data.searchText !== undefined) {
+			if (data.searchText.trim() !== '') {
+				handleSelect('contacts');
+				handleContactSearch(data.searchText);
+			}
+		}
+    };
 
   	const handleClose = () => setShow(false);
   	const handleShow = () => setShow(true);
   	
-  	const handleSelect = () => props.onSelectKey;
+  	const handleSelect = (k) => props.onKeySelect(k);
+  	
+  	const handleContactsUpdate = (id) => props.onContactsUpdate(id);
 
-  	// TODO create function to show all contacts
+  	const handleContactSearch = (st) => props.onContactSearch(st);
+
   	const handleShowAll = () => {
 		handleSelect('contacts');
-		navigate('/list');
+		handleContactsUpdate('00000000-0000-0000-0000-000000000000');
 	};
 	
     return (
@@ -45,8 +66,10 @@ const FindContact = (props) => {
         			<Form.Group className="mb-3" controlId="findContactName">
           				<Form.Label>Contact Name</Form.Label>
           				<Form.Control
+          					name="searchText"
             				type="text"
             				placeholder="Contact Name"
+            				onChange={updateData}
             				autoFocus
           				/>
           				<Form.Text className="text-muted">
@@ -59,7 +82,7 @@ const FindContact = (props) => {
       			<Button variant="secondary" onClick={handleClose}>
         			Close
       			</Button>
-      			<Button variant="primary" onClick={handleClose}>
+      			<Button variant="primary" onClick={submit}>
         			Find
       			</Button>
     		</Modal.Footer>

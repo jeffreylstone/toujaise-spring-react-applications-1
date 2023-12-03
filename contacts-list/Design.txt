@@ -1,7 +1,8 @@
 create table public.attribute_usage_code
 (attr_usage_cd smallint auto_increment,
 description varchar(63),
-primary key (attr_usage_cd));
+primary key (attr_usage_cd)
+);
 
 insert into public.attribute_usage_code (description) values ('Home');
 insert into public.attribute_usage_code (description) values ('Work');
@@ -14,13 +15,37 @@ insert into public.attribute_usage_code (description) values (-1, '(Nothing Sele
 create table public.phone_type_code
 (phone_type_cd smallint auto_increment,
 description varchar(63),
-primary key (phone_type_cd));
+primary key (phone_type_cd)
+);
 
 insert into public.phone_type_code (description) values ('Mobile/Wireless/Cellular');
 insert into public.phone_type_code (description) values ('Fixed/Land Line');
 insert into public.phone_type_code (description) values ('Satellite');
 insert into public.phone_type_code (description) values ('Internet/VOIP');
 insert into public.phone_type_code (description) values (-1, '(Nothing Selected)');
+
+create table public.country_codes
+(alpha_2 varchar(2) not null,
+alpha_3 varchar(3),
+flag varchar(2) default null,
+name varchar(63) not null,
+iso_numeric varchar(3) not null,
+official_name varchar(63) default null,
+common_name varchar(63) default null,
+primary key (alpha_3),
+unique key uk2 (alpha_2)
+);
+
+create table public.state_province_code
+(code varchar(10),
+alpha_2 varchar(2) not null,
+state_prov_cd varchar(7) not null,
+name varchar(63) not null,
+parent varchar(63) default null,
+type varchar(63) not null,
+primary key (code),
+constraint fk10 foreign key (alpha2) references public.country_codes (alpha_2)
+);
 
 CREATE TABLE public.contact (
   id uuid NOT NULL,
@@ -39,38 +64,34 @@ insert into public.contact (id, last_name, first_name, middle_name_initial, suff
 insert into public.contact (id, last_name, first_name, middle_name_initial, suffix, identifier, preferred_first_name) values (UUID(), 'Stone', 'Jeffrey', 'L.', '', '1', 'Jeff');
 insert into public.contact (id, last_name, first_name, middle_name_initial, suffix, identifier, preferred_first_name) values (UUID(), 'Stone', 'Jeffrey', 'L.', '', '2', 'Jeff');
 
-
--------------------
-
-create table public.email
-(id uuid,
-email_addr varchar(320), -- That limit is a maximum of 64 characters (octets) in the "local part" (before the "@") and a maximum of 255 characters (octets) in the domain part (after the "@") for a total length of 320 characters.
-email_usage_cd smallint, -- (home, work, etc) FK to attr_usage_cd in attribute_usage_code
-primary key (email_addr),
-foreign key fk (email_usage_cd) references public.attribute_usage_code (attr_usage_cd)
+CREATE TABLE public.address 
+(
+  id uuid NOT NULL,
+  address1 varchar(127) DEFAULT NULL,
+  address2 varchar(127) DEFAULT NULL,
+  city varchar(127) DEFAULT NULL,
+  country_cd varchar(2) DEFAULT NULL,
+  state_prov_cd varchar(7) DEFAULT NULL,
+  postal_code varchar(127) DEFAULT NULL,
+  PRIMARY KEY (id),
+  constraint fk12 foreign key (country_cd, state_prov_cd) references public.state_province_code (alpha_2, state_prov_cd)
 );
 
-insert into public.email (id, email_addr, email_usage_cd) values(uuid(), 'jeffrey.l.stone@gmail.com', 3);
-insert into public.email (id, email_addr, email_usage_cd) values(uuid(), 'rock002755901@yahoo.com', 3);
-insert into public.email (id, email_addr, email_usage_cd) values(uuid(), 'littlerock6011@yahoo.com', 3);
+insert into public.address (id, address1, address2, city, country_cd, state_prov_cd, postal_code) values (uuid(), '41039 Kimber LN', null, 'Magnolia', 'US', 'TX', '77354');
+insert into public.address (id, address1, address2, city, country_cd, state_prov_cd, postal_code) values (uuid(), '2126 S Hillcrest AVE', null, 'Springfield', 'US', 'MO', '65807');
+insert into public.address (id, address1, address2, city, country_cd, state_prov_cd, postal_code) values (uuid(), '6 Harbour DR', null, 'Bentonville', 'US', 'AR', '72712');
 
-CREATE TABLE public.country_code (
-  country_cd3 varchar(3) NOT NULL,
-  country_cd2 varchar(2) DEFAULT NULL,
-  description varchar(127) DEFAULT NULL,
-  std_desc varchar(127) DEFAULT NULL,
-  iso_ctry_nbr varchar(3) DEFAULT NULL,
-  top_lvl_domain varchar(3) DEFAULT NULL,
-  fips varchar(3) DEFAULT NULL,
-  geo_name_id int(11) DEFAULT NULL,
-  e164 varchar(3) DEFAULT NULL,
-  phone_country_cd varchar(8) DEFAULT NULL,
-  continent varchar(127) DEFAULT NULL,
-  capital varchar(127) DEFAULT NULL,
-  capital_tz varchar(31) DEFAULT NULL,
-  currency varchar(31) DEFAULT NULL,
-  PRIMARY KEY (country_cd3)
-) 
+create table public.address_link
+(id uuid,
+contact_id uuid, -- FK to id in contacts
+address_id uuid, -- FK to id in email
+addr_usage_cd smallint,
+is_primary boolean,
+primary key (id),
+constraint fk7 foreign key (contact_id) references public.contact (id),
+constraint fk8 foreign key (address_id) references public.address (id),
+constraint fk9 foreign key (addr_usage_cd) references public.attribute_usage_code (attr_usage_cd)
+);
 
 create table public.phone_number
 (id uuid,
@@ -78,8 +99,64 @@ phone_country_cd varchar(8), -- 1-3 digits (allows for embedded - AS IN 1-268, 4
 phone_nbr varchar(18), -- 14 digits max (allowing also for (), ,- AS IN (479) 899-1759)
 phone_nbr_ext varchar(21), -- 15 digits max (allowing also for prefix x, X, or Ext. )
 phone_type_cd smallint, -- (wireless, landline, satellite, internet, etc) FK to phone_type_cd in phone_type_code 
-phone_usage_cd smallint, -- (home, work, etc) FK to attr_usage_cd in attribute_usage_code
-primary key (id) -- enfoce uniqueness of (phone_country_cd, phone_nbr, phone_nbr_ext);
+primary key (id), -- enforce uniqueness of (phone_country_cd, phone_nbr, phone_nbr_ext)
+constraint fk11 foreign key (phone_type_cd) references public.phone_type_code (phone_type_cd)
+);
+
+insert into public.phone_number (id, phone_country_cd, phone_nbr, phone_nbr_ext, phone_type_cd) values (uuid(), '1', '4798991759', '', 1);
+insert into public.phone_number (id, phone_country_cd, phone_nbr, phone_nbr_ext, phone_type_cd) values (uuid(), '1', '4798991760', '', 1);
+insert into public.phone_number (id, phone_country_cd, phone_nbr, phone_nbr_ext, phone_type_cd) values (uuid(), '1', '4798991761', '', 1);
+insert into public.phone_number (id, phone_country_cd, phone_nbr, phone_nbr_ext, phone_type_cd) values (uuid(), '1', '4798991762', '', 1);
+insert into public.phone_number (id, phone_country_cd, phone_nbr, phone_nbr_ext, phone_type_cd) values (uuid(), '1', '4178828381', '', 2);
+
+create table public.phone_link
+(id uuid,
+contact_id uuid, -- FK to id in contact
+phone_id uuid, -- FK to id in phone_number
+phone_usage_cd smallint,
+is_primary boolean,
+primary key (id),
+constraint fk1 foreign key (contact_id) references public.contact (id),
+constraint fk2 foreign key (phone_id) references public.phone_number (id),
+constraint fk3 foreign key (phone_usage_cd) references public.attribute_usage_code (attr_usage_cd)
+);
+
+create table public.email
+(id uuid NOT NULL,
+email_addr varchar(320) NOT NULL, -- That limit is a maximum of 64 characters (octets) in the "local part" (before the "@") and a maximum of 255 characters (octets) in the domain part (after the "@") for a total length of 320 characters.
+primary key (id),
+unique key (email_addr)
+);
+
+insert into public.email (id, email_addr) values(uuid(), 'jeffrey.l.stone@gmail.com');
+insert into public.email (id, email_addr) values(uuid(), 'rock002755901@yahoo.com');
+insert into public.email (id, email_addr) values(uuid(), 'littlerock6011@yahoo.com');
+
+create table public.email_link
+(id uuid,
+contact_id uuid, -- FK to id in contacts
+email_id uuid, -- FK to id in email
+email_usage_cd smallint,
+is_primary boolean,
+primary key (id),
+constraint fk4 foreign key (contact_id) references public.contact (id),
+constraint fk5 foreign key (email_id) references public.email (id),
+constraint fk6 foreign key (email_usage_cd) references public.attribute_usage_code (attr_usage_cd)
+);
+
+-------------------
+
+create table public.email
+(id uuid,
+email_addr varchar(320), -- That limit is a maximum of 64 characters (octets) in the "local part" (before the "@") and a maximum of 255 characters (octets) in the domain part (after the "@") for a total length of 320 characters.
+primary key (email_addr)
+);
+
+insert into public.email (id, email_addr, email_usage_cd) values(uuid(), 'jeffrey.l.stone@gmail.com', 3);
+insert into public.email (id, email_addr, email_usage_cd) values(uuid(), 'rock002755901@yahoo.com', 3);
+insert into public.email (id, email_addr, email_usage_cd) values(uuid(), 'littlerock6011@yahoo.com', 3);
+
+
 
 alter table public.phone_number add foreign key fk2 (phone_type_cd) references public.phone_type_code (phone_type_cd);
 alter table public.phone_number add foreign key fk3 (phone_usage_cd) references public.attribute_usage_code (attr_usage_cd);
@@ -106,29 +183,38 @@ primary key(alpha_3));
 
 -------------------
 
-table phone_link
-id uuid
-contact_id uuid -- FK to id in contact
-phone_id uuid -- FK to id in phone_number
-is_primary boolean
-primary key (id)
+create table public.phone_link
+(id uuid,
+contact_id uuid, -- FK to id in contact
+phone_id uuid, -- FK to id in phone_number
+phone_usage_cd smallint,
+is_primary boolean,
+primary key (id),
+foreign key fk1 (contact_id) references public.contact (id),
+foreign key fk2 (phone_id) references public.phone_number (id),
+foreign key fk3 (phone_usage_cd) references public.attribute_usage_code (attr_usage_cd)
+);
 
-
-table email_link
-id uuid
-contact_id uuid -- FK to id in contacts
-email_id uuid -- FK to id in email
-is_primary boolean
-primary key (id)
-
+create table public.email_link
+(id uuid,
+contact_id uuid, -- FK to id in contacts
+email_id uuid, -- FK to id in email
+email_usage_cd smallint,
+is_primary boolean,
+primary key (id),
+constraint fk1 foreign key (contact_id) references public.contact (id),
+constraint fk2 foreign key (email_id) references public.email (id),
+constraint fk3 foreign key (email_usage_cd) references public.attribute_usage_code (attr_usage_cd)
+);
 
 table address_link
 id uuid
 contact_id uuid -- FK to id in contacts
 address_id uuid -- FK to id in address
+address_usage_cd smallint
 is_primary boolean
 primary key (id)
-
+)
 
 create table public.address
 (id uuid
@@ -142,6 +228,23 @@ address_usage_cd -- (home, work, etc) -- FK to attr_usage_cd in attribute_usage_
 primary key (id) -- enforce uniqueness of (country_cd3, state_province_cd, postal_cd, city, street_address_1, street_address_2),
 
 
+CREATE TABLE public.country_code (
+  country_cd3 varchar(3) NOT NULL,
+  country_cd2 varchar(2) DEFAULT NULL,
+  description varchar(127) DEFAULT NULL,
+  std_desc varchar(127) DEFAULT NULL,
+  iso_ctry_nbr varchar(3) DEFAULT NULL,
+  top_lvl_domain varchar(3) DEFAULT NULL,
+  fips varchar(3) DEFAULT NULL,
+  geo_name_id int(11) DEFAULT NULL,
+  e164 varchar(3) DEFAULT NULL,
+  phone_country_cd varchar(8) DEFAULT NULL,
+  continent varchar(127) DEFAULT NULL,
+  capital varchar(127) DEFAULT NULL,
+  capital_tz varchar(31) DEFAULT NULL,
+  currency varchar(31) DEFAULT NULL,
+  PRIMARY KEY (country_cd3)
+) 
 
 
 

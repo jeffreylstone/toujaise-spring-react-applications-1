@@ -37,6 +37,11 @@ public interface ContactService {
 	public List<Contact> retrieveContacts();
 
 	/**
+	 * @return
+	 */
+	public List<Contact> retrieveFilteredContacts(String searchText);
+
+	/**
 	 * @param modifiedContact
 	 * @return
 	 */

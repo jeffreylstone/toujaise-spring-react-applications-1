@@ -23,6 +23,12 @@ public class PhoneNumberCountryCode {
 	
 	private String alpha2;
 	
+	private String name;
+	
 	private Integer phoneNbrCtryCd;
 
+	public PhoneNumberCountryCode(String alpha2, Integer phoneNbrCtryCd) {
+		this.alpha2 = alpha2;
+		this.phoneNbrCtryCd = phoneNbrCtryCd;
+	}
 }

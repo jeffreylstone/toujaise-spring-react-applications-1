@@ -8,6 +8,7 @@
 package org.jsquare.apps.contactslist.controller;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.jsquare.apps.contactslist.repository.AttributeUsageCode;
 import org.jsquare.apps.contactslist.repository.CountryCodes;
@@ -29,12 +30,34 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @RestController
-@RequestMapping("/attributes")
+@RequestMapping("/services/attributes")
 public class AttributeController {
 	
 	@Autowired
 	private AttributesService service;
 	
+	@GetMapping(path="/uuid/{id}", produces="application/json")
+	public ResponseEntity<UUID> getUUIDFromString(@PathVariable("id") String id) {
+		ResponseEntity<UUID> response = null;
+		
+		UUID results = null;
+		
+		try {
+			results = UUID.fromString(id);
+		}
+		catch (IllegalArgumentException e) {
+			results = null;
+		}
+		
+		if (null != results) {
+			response = ResponseEntity.ok(results);
+		}
+		else {
+			response = ResponseEntity.internalServerError().build();
+		}
+
+		return response;
+	}
 	
 	@GetMapping(path="/phoneCountryCode", produces="application/json")
 	public ResponseEntity<List<PhoneNumberCountryCode>> getPhoneCountryCodes() {

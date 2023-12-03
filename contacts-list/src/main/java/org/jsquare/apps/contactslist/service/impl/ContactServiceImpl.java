@@ -15,6 +15,7 @@ import java.util.UUID;
 import org.jsquare.apps.contactslist.repository.Contact;
 import org.jsquare.apps.contactslist.repository.ContactRepository;
 import org.jsquare.apps.contactslist.service.ContactService;
+import org.jsquare.apps.contactslist.util.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
@@ -28,14 +29,6 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class ContactServiceImpl implements ContactService {
 	
-	private static final String DATABASE_EXCEPTION_MESSAGE = "Error occurred during database operation!";
-	private static final int LAST_NAME_MAX_LENGTH = 63;
-	private static final int FIRST_NAME_MAX_LENGTH = 63;
-	private static final int MIDDLE_NAME_MAX_LENGTH = 63;
-	private static final int SUFFIX_NAME_MAX_LENGTH = 31;
-	private static final int PREFERRED_NAME_MAX_LENGTH = 63;
-	private static final int IDENTIFIER_MAX_LENGTH = 127;
-	
 	@Autowired
 	ContactRepository repository;
 
@@ -44,13 +37,36 @@ public class ContactServiceImpl implements ContactService {
 		Contact contact = null;
 		
 		try {
-			contact = repository.save(newContact);
+			// TODO if contact already exists for this firstName, middleNameOrInitial, 
+			//  lastName, suffix, and identifier, return existing contact (which may 
+			//  then be compared to input contact for error checking/messaging)
+			contact = this.contactExists(newContact);
+			if (null == contact) {
+				contact = repository.save(newContact);
+			}
 		}
 		catch (DataAccessException dae) {
-			log.error(DATABASE_EXCEPTION_MESSAGE, dae);
+			log.error(Constants.DATABASE_EXCEPTION_MESSAGE, dae);
 		}
 
 		return contact;
+	}
+
+	private Contact contactExists(Contact newContact) {
+		List<Contact> matchingContactsList = null;
+		Contact matchingContact = null;
+		
+		matchingContactsList = this.retrieveMatchingContacts(newContact);
+		
+		if (null != matchingContactsList) {
+			for (Contact current : matchingContactsList) {
+				if (newContact.getIdentifier().equalsIgnoreCase(current.getIdentifier())) {
+					matchingContact = current;
+				}
+			}
+		}
+
+		return matchingContact;
 	}
 
 	@Override
@@ -61,12 +77,44 @@ public class ContactServiceImpl implements ContactService {
 			contacts = repository.findAll();
 		}
 		catch (DataAccessException dae) {
-			log.error(DATABASE_EXCEPTION_MESSAGE, dae);
+			log.error(Constants.DATABASE_EXCEPTION_MESSAGE, dae);
 		}
 		
 		return contacts;
 	}
 
+	@Override
+	public List<Contact> retrieveFilteredContacts(String searchText) {
+		List<Contact> contacts = null;
+
+		String[] searchElements = searchText.split(" ");
+		String lastNameToken = null;
+		
+		if (2 == searchElements.length) {
+			lastNameToken = searchElements[1].trim() + "%";
+			String firstNameToken = searchElements[0].trim() + "%";
+
+			try {
+				contacts = repository.findMatchingContactsFromTwoNames(lastNameToken, firstNameToken);
+			}
+			catch (DataAccessException dae) {
+				log.error(Constants.DATABASE_EXCEPTION_MESSAGE, dae);
+			}
+		}
+		else if (1 == searchElements.length) {
+			lastNameToken = searchElements[0].trim() + "%";
+			
+			try {
+				contacts = repository.findMatchingContactsFromSingleName(lastNameToken);
+			}
+			catch (DataAccessException dae2) {
+				log.error(Constants.DATABASE_EXCEPTION_MESSAGE, dae2);
+			}
+		}
+		
+		return contacts;
+	}
+	
 	@Override
 	public Contact retrieveContact(UUID id) {
 		Contact contact = null;
@@ -81,7 +129,7 @@ public class ContactServiceImpl implements ContactService {
 			}
 		}
 		catch (DataAccessException dae) {
-			log.error(DATABASE_EXCEPTION_MESSAGE, dae);
+			log.error(Constants.DATABASE_EXCEPTION_MESSAGE, dae);
 		}
 
 		return contact;
@@ -95,7 +143,7 @@ public class ContactServiceImpl implements ContactService {
 			contact = repository.save(modifiedContact);
 		}
 		catch (DataAccessException dae) {
-			log.error(DATABASE_EXCEPTION_MESSAGE, dae);
+			log.error(Constants.DATABASE_EXCEPTION_MESSAGE, dae);
 		}
 
 		return contact;
@@ -108,7 +156,7 @@ public class ContactServiceImpl implements ContactService {
 			repository.deleteById(id);
 		}
 		catch (DataAccessException dae) {
-			log.error(DATABASE_EXCEPTION_MESSAGE, dae);
+			log.error(Constants.DATABASE_EXCEPTION_MESSAGE, dae);
 		}
 	}
 
@@ -122,8 +170,7 @@ public class ContactServiceImpl implements ContactService {
 					searchContact.getSuffix());
 		}
 		catch (DataAccessException dae) {
-			log.error(DATABASE_EXCEPTION_MESSAGE, dae);
-//			matchingList = Collections.emptyList();
+			log.error(Constants.DATABASE_EXCEPTION_MESSAGE, dae);
 		}
 		
 		return matchingList;
@@ -152,12 +199,12 @@ public class ContactServiceImpl implements ContactService {
 			throw new IllegalArgumentException("testContact MUST NOT be null!");
 		}
 		
-		if ((null != testContact.getLastName() && LAST_NAME_MAX_LENGTH >= testContact.getLastName().length()) 
-			&& (null != testContact.getFirstName() && FIRST_NAME_MAX_LENGTH >= testContact.getFirstName().length()) 
-			&& (null != testContact.getMiddleNameOrInitial() && MIDDLE_NAME_MAX_LENGTH >= testContact.getMiddleNameOrInitial().length()) 
-			&& (null != testContact.getSuffix() && SUFFIX_NAME_MAX_LENGTH >= testContact.getSuffix().length()) 
-			&& (null == testContact.getPreferredFirstName() || PREFERRED_NAME_MAX_LENGTH >= testContact.getPreferredFirstName().length()) 
-			&& (null == testContact.getIdentifier() || IDENTIFIER_MAX_LENGTH >= testContact.getIdentifier().length()) 
+		if ((null != testContact.getLastName() && Constants.LAST_NAME_MAX_LENGTH >= testContact.getLastName().length()) 
+			&& (null != testContact.getFirstName() && Constants.FIRST_NAME_MAX_LENGTH >= testContact.getFirstName().length()) 
+			&& (null != testContact.getMiddleNameOrInitial() && Constants.MIDDLE_NAME_MAX_LENGTH >= testContact.getMiddleNameOrInitial().length()) 
+			&& (null != testContact.getSuffix() && Constants.SUFFIX_NAME_MAX_LENGTH >= testContact.getSuffix().length()) 
+			&& (null == testContact.getPreferredFirstName() || Constants.PREFERRED_NAME_MAX_LENGTH >= testContact.getPreferredFirstName().length()) 
+			&& (null == testContact.getIdentifier() || Constants.IDENTIFIER_MAX_LENGTH >= testContact.getIdentifier().length()) 
 			&& (null != testContact.getId())) {
 			valid = Boolean.TRUE;
 		}

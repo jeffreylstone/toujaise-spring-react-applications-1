@@ -1,16 +1,67 @@
 import React from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import './App.css';
 
 const EditPhone = (props) => {
-  	
+	
+	const usageTypes = props.usageSelections;
+
+	const [countryCodes, setCountryCodes] = useState([]);
+	
+	const [phoneTypes, setPhoneTypes] = useState([]);
+
+	const [countrycodedata, setCountrycodedata] = useState({});
+
+	const [typedata, setTypedata] = useState({});
+
+	const [usagedata, setUsagedata] = useState({});
+
   	const [show, setShow] = useState(false);
+
+	useEffect(() => {
+		fetch(`/services/attributes/phoneCountryCode`)
+			.then(response => response.json())
+			.then(data => setCountryCodes(data));
+		fetch(`/services/attributes/phoneType`)
+			.then(response => response.json())
+			.then(data => setPhoneTypes(data));
+	}, []);
+
+    const updateCountryCodeData = (e) => {
+		var newValue = countryCodes.find(el => el.alpha2 === e.target.value);
+		var newCountryCode = newValue.phoneNbrCtryCd;
+		
+        setCountrycodedata({
+            ...countrycodedata,
+            [e.target.name]: newCountryCode
+        });
+    };
+
+    const updateTypeData = (e) => {
+        setTypedata({
+            ...typedata,
+            [e.target.name]: e.target.value
+        });
+    };
+
+    const updateUsageData = (e) => {
+        setUsagedata({
+            ...usagedata,
+            [e.target.name]: e.target.value
+        });
+    };
 
   	const handleClose = () => setShow(false);
   	const handleShow = () => setShow(true);
+  	const handleSubmit = () => {
+		  alert(JSON.stringify(countrycodedata));
+		  alert(JSON.stringify(typedata));
+		  alert(JSON.stringify(usagedata));
+		  setShow(false);
+	};
   	
 //CREATE TABLE `phone_number` (
 //  `id` uuid DEFAULT NULL,
@@ -26,10 +77,18 @@ const EditPhone = (props) => {
 //  CONSTRAINT `fk3` FOREIGN KEY (`phone_usage_cd`) REFERENCES `attribute_usage_code` (`attr_usage_cd`)
 //) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+//          				<Form.Control
+//            				type="text"
+//            				placeholder="Phone Country"
+//            				autoFocus
+//          				/>
+
+
 // Country, Type, Usage should be drop-downs  	
   	
   	return (
     <>
+       	<p>{props.contactSelection}</p>
     	<Button variant="primary" onClick={handleShow}>
     		Create New Phone Number
   		</Button>
@@ -46,11 +105,9 @@ const EditPhone = (props) => {
       			<Form>
         			<Form.Group className="mb-3" controlId="editPhoneCountry">
           				<Form.Label>Phone Country*</Form.Label>
-          				<Form.Control
-            				type="text"
-            				placeholder="Phone Country"
-            				autoFocus
-          				/>
+          				<Form.Select name="phoneCountry" onChange={updateCountryCodeData} defaultValue="US" >
+          					{countryCodes.map((type) => <option value={type.alpha2}>{type.name}</option>)}
+          				</Form.Select>
         			</Form.Group>
         			<Form.Group className="mb-3" controlId="editPhoneNumber">
           				<Form.Label>Phone Number*</Form.Label>
@@ -68,17 +125,15 @@ const EditPhone = (props) => {
         			</Form.Group>
         			<Form.Group className="mb-3" controlId="editPhoneType">
           				<Form.Label>Phone Type</Form.Label>
-          				<Form.Control
-            				type="text"
-            				placeholder="Phone Type"
-          				/>
+          				<Form.Select name="phoneType" onChange={updateTypeData}>
+          					{phoneTypes.map((type) => <option value={type.phoneTypCd}>{type.description}</option>)}
+          				</Form.Select>
         			</Form.Group>
         			<Form.Group className="mb-3" controlId="editPhoneUsage">
           				<Form.Label>Usage</Form.Label>
-          				<Form.Control
-            				type="text"
-            				placeholder="Usage"
-          				/>
+          				<Form.Select name="phoneUsage" onChange={updateUsageData}>
+          					{usageTypes.map((type) => <option value={type.attrUsageCd}>{type.description}</option>)}
+          				</Form.Select>
         			</Form.Group>
         			<p>*Required</p>
         		</Form>
@@ -87,7 +142,7 @@ const EditPhone = (props) => {
       			<Button variant="secondary" onClick={handleClose}>
         			Close
       			</Button>
-      			<Button variant="primary" onClick={handleClose}>
+      			<Button variant="primary" onClick={handleSubmit}>
         			Create
       			</Button>
     		</Modal.Footer>

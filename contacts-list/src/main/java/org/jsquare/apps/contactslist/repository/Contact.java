@@ -15,7 +15,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -23,7 +22,6 @@ import lombok.Setter;
  */
 @Entity
 @Table(name="contact")
-//@NoArgsConstructor
 @AllArgsConstructor
 @Setter
 @Getter
@@ -50,7 +48,6 @@ public class Contact {
 	
 	@Column(name="identifier", length=127, nullable=false, unique=false)
 	private String identifier;
-	
 	
 	/**
 	 * Default (No args) constructor for this class.  Sets a value for ID with a randomly generated UUID.

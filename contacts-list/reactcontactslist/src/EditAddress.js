@@ -1,32 +1,63 @@
 import React from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import './App.css';
 
 const EditAddress = (props) => {
+	
+	const [countryCodes, setCountryCodes] = useState([]);
+
+	const [stateProvinceCodes, setStateProvinceCodes] = useState([]);
+
+	const [stateProvinceCodesForCountry, setStateProvinceCodesForCountry] = useState([]);
+
+	const [countrycodedata, setCountrycodedata] = useState({});
+
+	const [stateprovincedata, setStateprovincedata] = useState({});
+
   	const [show, setShow] = useState(false);
+  	
+  	const [defaultCountry, setDefaultCountry] = useState('US');
+
+	useEffect(() => {
+		fetch(`/services/attributes/countryCodes`)
+			.then(response => response.json())
+			.then(data => setCountryCodes(data));
+		fetch(`/services/attributes/stateProvince`)
+			.then(response => response.json())
+			.then((data) => {
+				setStateProvinceCodes(data);
+				setStateProvinceCodesForCountry(data.filter(el => el.alpha2 === 'US'));
+			});
+	}, []);
+
+    const updateCountryCodeData = (e) => {
+        setCountrycodedata({
+            ...countrycodedata,
+            [e.target.name]: [e.target.value]
+        });
+        
+        var sp4ctry = stateProvinceCodes.filter(el => el.alpha2 === e.target.value);
+         
+    	setStateProvinceCodesForCountry(sp4ctry);    	
+    };
+	
+	const updateStateProvinceData = (e) => {
+		setStateprovincedata({
+			...stateprovincedata,
+			[e.target.name]: [e.target.value]	
+		});
+	};
 
   	const handleClose = () => setShow(false);
+
   	const handleShow = () => setShow(true);
-  	
-//CREATE TABLE `address` (
-//  `id` uuid NOT NULL,
-//  `address1` varchar(127) DEFAULT NULL,
-//  `address2` varchar(127) DEFAULT NULL,
-//  `city` varchar(127) DEFAULT NULL,
-//  `state_province` varchar(127) DEFAULT NULL,
-//  `country_code` uuid DEFAULT NULL,
-//  `postal_code` varchar(127) DEFAULT NULL,
-//  PRIMARY KEY (`id`)
-//) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;  	
-  	
-// country code and state/province should be drop-down lists...  	
-  	
 
   	return (
     <>
+    	<p>{props.contactSelection}</p>
     	<Button variant="primary" onClick={handleShow}>
     		Create New Address
   		</Button>
@@ -65,17 +96,15 @@ const EditAddress = (props) => {
         			</Form.Group>
         			<Form.Group className="mb-3" controlId="editAddressCountry">
           				<Form.Label>Country*</Form.Label>
-          				<Form.Control
-            				type="text"
-            				placeholder="Country"
-          				/>
+          				<Form.Select name="addressCountry" onChange={updateCountryCodeData} defaultValue={defaultCountry} >
+          					{countryCodes.map((type) => <option value={type.alpha_2}>{type.name}</option>)}
+          				</Form.Select>
         			</Form.Group>
         			<Form.Group className="mb-3" controlId="editAddressStateProvince">
           				<Form.Label>State/Province</Form.Label>
-          				<Form.Control
-            				type="text"
-            				placeholder="State/Province"
-          				/>
+          				<Form.Select name="addressStateProvince" onChange={updateStateProvinceData} >
+          					{stateProvinceCodesForCountry.map((type) => <option value={type.stateProvCd}>{type.name}</option>)}
+          				</Form.Select>
         			</Form.Group>
         			<Form.Group className="mb-3" controlId="editAddressPostalCode">
           				<Form.Label>Postal Code*</Form.Label>

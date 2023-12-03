@@ -33,15 +33,11 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @RestController
-@RequestMapping("/contacts")
+@RequestMapping("/services/contacts")
 public class ContactController {
 	
-//    @Autowired
-//    private ContactRepository repository;
-    
     @Autowired
     private ContactService service;
-    
     
     @GetMapping(path="/jeff", produces="application/json")
     public ResponseEntity<List<Contact>> matchingList() {
@@ -61,8 +57,6 @@ public class ContactController {
     	Contact contact = service.createContact(newContact);
     	
     	if (null != contact) {
-    		// TODO URI for created???
-    		// new URI("/clients/" + savedClient.getId())
     		response = ResponseEntity.created(new URI("/contacts/" + contact.getId())).body(contact);
     	}
     	else {
@@ -97,6 +91,27 @@ public class ContactController {
     	if (null != contact) {
     		if (null != contact.getId()) {
     			response = ResponseEntity.ok(contact);
+    		}
+    		else {
+    			response = ResponseEntity.noContent().build();
+    		}
+    	}
+    	else {
+    		response = ResponseEntity.internalServerError().build();
+    	}
+    	
+    	return response;
+    }
+    
+    @GetMapping(path="/retrieve/filtered/{searchText}", produces="application/json")
+    public ResponseEntity<List<Contact>> retrieveFilteredContacts(@PathVariable(value = "searchText") String searchText) {
+    	ResponseEntity<List<Contact>> response = null;
+
+    	List<Contact> contacts = service.retrieveFilteredContacts(searchText);
+    	
+    	if (null != contacts) {
+    		if (!contacts.isEmpty()) {
+        		response = ResponseEntity.ok(contacts);
     		}
     		else {
     			response = ResponseEntity.noContent().build();

@@ -21,10 +21,31 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ContactRepository extends JpaRepository<Contact, UUID> {
 	
-	@Query(value = "select * from contact c where c.last_name = :lastName and c.first_name = :firstName and c.middle_name_initial = :middleName and c.suffix = :suffix ;", nativeQuery = true)
-	List<Contact> findMatchingContacts(@Param("lastName") String lastName, 
+	@Query(value = "select id, last_name, first_name, preferred_first_name," + 
+			" middle_name_initial, suffix, identifier" + 
+			" from contact c" + 
+			" where c.last_name = :lastName and c.first_name = :firstName" + 
+			" and c.middle_name_initial = :middleName and c.suffix = :suffix ;", 
+			nativeQuery = true)
+	public List<Contact> findMatchingContacts(@Param("lastName") String lastName, 
 			@Param("firstName") String firstName, 
 			@Param("middleName") String middleNameOrInitial,
 			@Param("suffix") String suffix);
+
+	@Query(value = "select id, last_name, first_name, preferred_first_name," + 
+			" middle_name_initial, suffix, identifier" + 
+			" from contact c" + 
+			" where ((lower(c.last_name) like :lastName and lower(c.first_name) like :firstName )" + 
+			" or (lower(c.last_name) like :lastName and lower(c.preferred_first_name) like :firstName ));", 
+			nativeQuery = true)
+	public List<Contact> findMatchingContactsFromTwoNames(@Param("lastName") String lastName, 
+			@Param("firstName") String firstName);
+
+	@Query(value = "select id, last_name, first_name, preferred_first_name," + 
+			" middle_name_initial, suffix, identifier" + 
+			" from contact c" + 
+			" where lower(c.last_name) like :lastName ;", 
+			nativeQuery = true)
+	public List<Contact> findMatchingContactsFromSingleName(@Param("lastName") String lastName);
 
 }

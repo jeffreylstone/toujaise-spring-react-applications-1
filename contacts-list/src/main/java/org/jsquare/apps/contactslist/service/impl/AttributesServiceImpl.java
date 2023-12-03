@@ -8,6 +8,8 @@
 package org.jsquare.apps.contactslist.service.impl;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.jsquare.apps.contactslist.model.PhoneNumberCountryCodes;
 import org.jsquare.apps.contactslist.repository.AttributeUsageCode;
@@ -50,7 +52,17 @@ public class AttributesServiceImpl implements AttributesService {
 	
 	@Override
 	public List<PhoneNumberCountryCode> getPhoneNumberCountryCodes() {
-		return PhoneNumberCountryCodes.getInstance().getPhoneNumberCountryCodes();
+		List<PhoneNumberCountryCode> phoneNumberCountryCodes = 
+				PhoneNumberCountryCodes.getInstance().getPhoneNumberCountryCodes(); 
+		List<CountryCodes> countryCodesList = this.getCountryCodesList();
+		
+		if (null != countryCodesList) {
+			final Map<String, String> countryCodesMap = countryCodesList.stream().
+					collect(Collectors.toMap(CountryCodes::getAlpha2, CountryCodes::getName)); 
+			phoneNumberCountryCodes.stream().forEach(p->p.setName(countryCodesMap.get(p.getAlpha2())));
+		}
+		
+		return phoneNumberCountryCodes;
 	}
 
 	@Override
