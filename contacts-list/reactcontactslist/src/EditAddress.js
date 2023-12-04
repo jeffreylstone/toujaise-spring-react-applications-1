@@ -1,6 +1,8 @@
 import React from 'react';
 import { useEffect, useState } from 'react';
 import Button from 'react-bootstrap/Button';
+import ButtonGroup from 'react-bootstrap/ButtonGroup';
+import Table from 'react-bootstrap/Table';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import './App.css';
@@ -20,6 +22,8 @@ const EditAddress = (props) => {
   	const [show, setShow] = useState(false);
   	
   	const [defaultCountry, setDefaultCountry] = useState('US');
+  	
+  	const [contactAddressData, setContactAddressData] = useState([]);
 
 	useEffect(() => {
 		fetch(`/services/attributes/countryCodes`)
@@ -31,6 +35,7 @@ const EditAddress = (props) => {
 				setStateProvinceCodes(data);
 				setStateProvinceCodesForCountry(data.filter(el => el.alpha2 === 'US'));
 			});
+		// TODO if contact selected, fetch associated address data
 	}, []);
 
     const updateCountryCodeData = (e) => {
@@ -61,6 +66,33 @@ const EditAddress = (props) => {
     	<Button variant="primary" onClick={handleShow}>
     		Create New Address
   		</Button>
+        <Table className="mt-4" striped hover>
+        	<thead>
+            <tr>
+            	<th width="20%">Address</th>
+                <th width="20%">City</th>
+                <th width="20%">State/Province</th>
+                <th width="20%">Postal Code</th>
+                <th width="20%">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            {contactAddressData.map((address => {
+        		return <tr key={address.id} onClick={(e) => {}} >
+            		<td style={{whiteSpace: 'nowrap'}}>{address.address1}<br/>{address.address2}</td>
+            		<td>{address.city}</td>
+            		<td>{address.stateProvinceCode}</td>
+            		<td>{address.postalCode}</td>
+            		<td>
+                		<ButtonGroup>
+                    		<Button size="sm" variant="primary" >Edit</Button>
+                    		<Button size="sm" variant="danger" >Delete</Button>
+                		</ButtonGroup>
+            		</td>
+        		</tr>
+        	}))}
+            </tbody>
+        </Table>
   		<Modal 
   			show={show} 
   			onHide={handleClose}

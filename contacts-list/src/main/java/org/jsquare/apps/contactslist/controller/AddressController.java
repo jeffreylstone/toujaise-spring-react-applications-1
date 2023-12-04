@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.jsquare.apps.contactslist.model.AddressServicesRequest;
+import org.jsquare.apps.contactslist.model.LinkedAddress;
 import org.jsquare.apps.contactslist.repository.Address;
 import org.jsquare.apps.contactslist.repository.AddressLink;
 import org.jsquare.apps.contactslist.service.AddressService;
@@ -85,11 +86,29 @@ public class AddressController {
 		return response;
 	}
 	
-	@GetMapping(path="/retrieveAddressesForContact/{contactId}", produces="application/json")
-	public ResponseEntity<List<AddressLink>> getAddressesForContact(@PathVariable("contactId") UUID contactId) {
+	@GetMapping(path="/retrieveAddressLinksForContact/{contactId}", produces="application/json")
+	public ResponseEntity<List<AddressLink>> getAddressLinksForContact(@PathVariable("contactId") UUID contactId) {
 		ResponseEntity<List<AddressLink>> response = null;
 		
-		List<AddressLink> results = addressService.getAddressesForContact(contactId);
+		List<AddressLink> results = addressService.getAddressLinksForContact(contactId);
+		
+		if (null != results) {
+			response = ResponseEntity.ok(results);
+		}
+		else {
+			// TODO log error with appropriate message (including contactId)
+			log.error("");
+			response = ResponseEntity.internalServerError().build();
+		}
+
+		return response;
+	}
+	
+	@GetMapping(path="/retrieveLinkedAddressesForContact/{contactId}", produces="application/json")
+	public ResponseEntity<List<LinkedAddress>> getLinkedAddressesForContact(@PathVariable("contactId") UUID contactId) {
+		ResponseEntity<List<LinkedAddress>> response = null;
+		
+		List<LinkedAddress> results = addressService.getLinkedAddressesForContact(contactId);
 		
 		if (null != results) {
 			response = ResponseEntity.ok(results);

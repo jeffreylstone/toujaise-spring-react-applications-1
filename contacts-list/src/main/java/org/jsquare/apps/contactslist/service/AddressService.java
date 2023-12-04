@@ -10,6 +10,7 @@ package org.jsquare.apps.contactslist.service;
 import java.util.List;
 import java.util.UUID;
 
+import org.jsquare.apps.contactslist.model.LinkedAddress;
 import org.jsquare.apps.contactslist.repository.Address;
 import org.jsquare.apps.contactslist.repository.AddressLink;
 
@@ -51,7 +52,13 @@ public interface AddressService {
 	 * @param contactId ID of Contact for which AddressLinks are being retrieved
 	 * @return (List<AddressLink>) list of AddressLinks for specified contact
 	 */
-	public List<AddressLink> getAddressesForContact(UUID contactId);
+	public List<AddressLink> getAddressLinksForContact(UUID contactId);
+	
+	/**
+	 * @param contactId ID of Contact for which LinkedAddresses are being retrieved
+	 * @return (List<LinkedAddress>) list of LinkedAddress objects for specified contact
+	 */
+	public List<LinkedAddress> getLinkedAddressesForContact(UUID contactId);
 	
 	/**
 	 * @param addressLinkId ID of AddressLink to be retrieved

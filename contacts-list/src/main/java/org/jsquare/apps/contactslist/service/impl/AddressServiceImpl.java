@@ -7,10 +7,12 @@
  */
 package org.jsquare.apps.contactslist.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.jsquare.apps.contactslist.model.LinkedAddress;
 import org.jsquare.apps.contactslist.repository.Address;
 import org.jsquare.apps.contactslist.repository.AddressLink;
 import org.jsquare.apps.contactslist.repository.AddressLinkRepository;
@@ -155,20 +157,6 @@ public class AddressServiceImpl implements AddressService {
 	}
 
 	@Override
-	public List<AddressLink> getAddressesForContact(UUID contactId) {
-		List<AddressLink> addrLinks = null;
-		
-		try {
-			addrLinks = addressLinkRepository.getLinksForContact(contactId);
-		}
-		catch (DataAccessException dae) {
-			log.error(Constants.DATABASE_EXCEPTION_MESSAGE, dae);
-		}
-		
-		return addrLinks;
-	}
-
-	@Override
 	public AddressLink getAddressLinkForId(UUID addressLinkId) {
 		AddressLink addrLink = null;
 
@@ -200,6 +188,56 @@ public class AddressServiceImpl implements AddressService {
 		}
 
 		return address;
+	}
+
+	@Override
+	public List<AddressLink> getAddressLinksForContact(UUID contactId) {
+		List<AddressLink> addrLinks = null;
+		
+		try {
+			addrLinks = addressLinkRepository.getLinksForContact(contactId);
+		}
+		catch (DataAccessException dae) {
+			log.error(Constants.DATABASE_EXCEPTION_MESSAGE, dae);
+		}
+		
+		return addrLinks;
+	}
+
+	@Override
+	public List<LinkedAddress> getLinkedAddressesForContact(UUID contactId) {
+		List<Object[]> addrLinks = null;
+		List<LinkedAddress> linkedAddresses = null;
+		 
+		try {
+			addrLinks = addressLinkRepository.getAddressesForContact(contactId);
+
+			linkedAddresses = new ArrayList<>();
+			
+			for (Object[] current : addrLinks) {
+				if (LinkedAddress.LINKED_ADDRESS_NUMBER_OF_FIELDS == current.length) {
+					int i = 0;
+					LinkedAddress linkedAddress = new LinkedAddress();
+					linkedAddress.setId((UUID) current[i++]);
+					linkedAddress.setContactId((UUID) current[i++]);
+					linkedAddress.setAddressId((UUID) current[i++]);
+					linkedAddress.setAddress1((String) current[i++]);
+					linkedAddress.setAddress2((String) current[i++]);
+					linkedAddress.setCity((String) current[i++]);
+					linkedAddress.setCountryCode((String) current[i++]);
+					linkedAddress.setStateProvinceCode((String) current[i++]);
+					linkedAddress.setPostalCode((String) current[i++]);
+					linkedAddress.setAddressUsageCode(((Short) current[i++]).intValue());
+					linkedAddress.setIsPrimary((Boolean) current[i]);
+					linkedAddresses.add(linkedAddress);
+				}
+			}
+		}
+		catch (DataAccessException dae) {
+			log.error(Constants.DATABASE_EXCEPTION_MESSAGE, dae);
+		}
+		
+		return linkedAddresses;
 	}
 
 }
